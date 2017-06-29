@@ -26,10 +26,21 @@ object ServerMain extends ServerApp {
   }
 
   override def server(args: List[String]): Task[Server] = {
+    println("TiniBot2.0:  http://localhost:8080/index.html")
+
     BlazeBuilder
       .bindHttp(8080, "localhost")
       .mountService(helloWorldService, "/api")
       .mountService(service)
       .start
   }
+
+  Task {
+    println("Press ENTER to stop Server ...")
+    System.in.read()
+    System.exit(0)
+  }.unsafePerformAsync( f => {
+    System.err.println(f)
+  })
+
 }
