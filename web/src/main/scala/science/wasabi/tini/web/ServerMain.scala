@@ -7,6 +7,7 @@ import org.http4s._
 import org.http4s.dsl._
 import org.http4s.server.{Server, ServerApp}
 import org.http4s.server.blaze.BlazeBuilder
+import science.wasabi.tini.Helper
 
 import scalaz.concurrent.Task
 
@@ -15,7 +16,7 @@ object ServerMain extends ServerApp {
 
   val helloWorldService = HttpService {
     case GET -> Root / "hello" / name =>
-      Ok(s"Hello, $name.")
+      Ok(s"${Helper.greeting}, $name.")
   }
 
   val service = HttpService {

@@ -33,7 +33,12 @@ lazy val sharedJvm = shared.jvm
   //.in(file("sharedJvm"))
   .settings(
   scalaVersion := scalaV,
-  name := "tini-sharedJvm")
+  name := "tini-sharedJvm",
+  libraryDependencies ++= Seq(
+    //"eu.unicredit" %% "shocon" % "0.1.8"
+    "com.github.pureconfig" %% "pureconfig" % "0.7.2"
+  )
+)
 
 lazy val sharedJs = shared.js
   //.in(file("sharedJs"))
