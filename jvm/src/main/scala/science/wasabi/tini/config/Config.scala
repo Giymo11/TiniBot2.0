@@ -8,7 +8,8 @@ import scala.io.Source
 
 
 object Config {
-  case class TiniConfig(apiKey: String, envExample: String)
+  // Model for the config file
+  case class TiniConfig(apiKey: String, envExample: String, discordKey: String)
 
   val conf: TiniConfig = {
     val confString: String = Source

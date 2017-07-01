@@ -11,6 +11,7 @@ scalaVersion := scalaV
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 resolvers += "Twitter Maven" at "http://maven.twttr.com"
+resolvers += "jcenter" at "http://jcenter.bintray.com"
 
 val http4sVersion = "0.15.13a"
 
@@ -27,7 +28,9 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name := "tini-shared",
     scalaVersion := scalaV,
-    libraryDependencies ++= Seq())
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats" % "0.9.0"
+    ))
 
 lazy val sharedJvm = shared.jvm
   //.in(file("sharedJvm"))
@@ -36,9 +39,7 @@ lazy val sharedJvm = shared.jvm
   name := "tini-sharedJvm",
   libraryDependencies ++= Seq(
     //"eu.unicredit" %% "shocon" % "0.1.8"
-    "com.github.pureconfig" %% "pureconfig" % "0.7.2"
-  )
-)
+    "com.github.pureconfig" %% "pureconfig" % "0.7.2"))
 
 lazy val sharedJs = shared.js
   //.in(file("sharedJs"))
@@ -50,7 +51,10 @@ lazy val bot = project
   .in(file("bot"))
   .settings(
     scalaVersion := scalaV,
-    name := "tini-bot")
+    name := "tini-bot",
+    resolvers += "jcenter-bintray" at "http://jcenter.bintray.com",
+    libraryDependencies ++= Seq(
+      "net.dv8tion" % "JDA" % "3.1.0_204"))
   .dependsOn(sharedJvm)
 
 lazy val web = project
