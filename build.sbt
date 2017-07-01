@@ -53,8 +53,11 @@ lazy val bot = project
     scalaVersion := scalaV,
     name := "tini-bot",
     resolvers += "jcenter-bintray" at "http://jcenter.bintray.com",
+    resolvers += "jitpack.io" at "https://jitpack.io",
     libraryDependencies ++= Seq(
-      "net.dv8tion" % "JDA" % "3.1.0_204"))
+      "net.dv8tion" % "JDA" % "3.1.0_204",
+      "com.github.austinv11" % "Discord4J" % "2.8.4"
+    ))
   .dependsOn(sharedJvm)
 
 lazy val web = project

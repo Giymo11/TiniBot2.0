@@ -1,6 +1,7 @@
 package science.wasabi.tini.bot.discord
 
 
+
 trait DiscordObject {
   type Snowflake = String
   type Timestamp = String
@@ -12,9 +13,7 @@ trait DiscordObject {
   type Reaction = DiscordObject
 }
 
-
 case class User(id: String) extends DiscordObject
-
 
 case class DiscordMessage(id: String,
                           channel_id: String,
