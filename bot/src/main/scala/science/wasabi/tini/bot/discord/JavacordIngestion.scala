@@ -10,7 +10,7 @@ import science.wasabi.tini.config.Config.TiniConfig
 
 class JavacordIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig) {
 
-  import DiscordWrapperConverter._
+  import DiscordWrapperConverter.JavacordConverter._
 
   val javacord: DiscordAPI =
     Javacord

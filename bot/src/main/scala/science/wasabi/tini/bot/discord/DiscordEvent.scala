@@ -15,21 +15,22 @@ trait DiscordObject {
 
 case class User(id: String) extends DiscordObject
 
-case class DiscordMessage(id: String,
-                          channel_id: String,
-                          author: User,
-                          content: String,
-                          timestamp: String,
-                          edited_timestamp: Option[String],
-                          tts: Boolean,
-                          mention_everyone: Boolean,
-                          mentions: Seq[DiscordObject],
-                          mention_roles: Seq[DiscordObject],
-                          attachments: Seq[DiscordObject],
-                          embeds: Seq[DiscordObject],
-                          reactions: Seq[DiscordObject],
-                          nonce: Option[String],
-                          pinned: Boolean,
-                          webhook_id: Option[String]
-                  ) extends DiscordObject {}
+case class DiscordMessage(
+  id: String = "",
+  channel_id: String = "",
+  author: User = null,
+  content: String = "",
+  timestamp: String = "",
+  edited_timestamp: Option[String] = None,
+  tts: Boolean = false,
+  mention_everyone: Boolean = false,
+  mentions: Seq[DiscordObject] = Seq.empty,
+  mention_roles: Seq[DiscordObject] = Seq.empty,
+  attachments: Seq[DiscordObject] = Seq.empty,
+  embeds: Seq[DiscordObject] = Seq.empty,
+  reactions: Seq[DiscordObject] = Seq.empty,
+  nonce: Option[String]= None,
+  pinned: Boolean = false,
+  webhook_id: Option[String] = None
+) extends DiscordObject {}
 

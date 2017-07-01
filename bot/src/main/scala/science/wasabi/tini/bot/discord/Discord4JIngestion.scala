@@ -10,7 +10,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 
 class Discord4JIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig) {
 
-  import DiscordWrapperConverter._
+  import DiscordWrapperConverter.Discord4JConverter._
 
   val discordClient: IDiscordClient =
     new ClientBuilder()
