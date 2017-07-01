@@ -54,9 +54,11 @@ lazy val bot = project
     name := "tini-bot",
     resolvers += "jcenter-bintray" at "http://jcenter.bintray.com",
     resolvers += "jitpack.io" at "https://jitpack.io",
+    resolvers += "javacord-repo" at "http://repo.bastian-oppermann.de",
     libraryDependencies ++= Seq(
       "net.dv8tion" % "JDA" % "3.1.0_204",
-      "com.github.austinv11" % "Discord4J" % "2.8.4"
+      "com.github.austinv11" % "Discord4J" % "2.8.4",
+      "de.btobastian.javacord" % "javacord" % "2.0.14"
     ))
   .dependsOn(sharedJvm)
 

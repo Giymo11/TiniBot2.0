@@ -3,8 +3,8 @@ package science.wasabi.tini.bot.discord
 
 object DiscordWrapperConverter {
 
-  import sx.blah.discord.handle.obj.IMessage
-  implicit def convertMessage(message: IMessage): DiscordMessage = DiscordMessage(
+  import sx.blah.discord.handle.obj.{IMessage => Discord4JMessage}
+  implicit def convertMessage(message: Discord4JMessage): DiscordMessage = DiscordMessage(
     message.getStringID,
     message.getChannel.getStringID,
     User(message.getAuthor.getStringID),
@@ -23,8 +23,8 @@ object DiscordWrapperConverter {
     None
   )
 
-  import net.dv8tion.jda.core.entities.Message
-  implicit def convertMessage(message: Message): DiscordMessage = DiscordMessage(
+  import net.dv8tion.jda.core.entities.{Message => JdaMessage}
+  implicit def convertMessage(message: JdaMessage): DiscordMessage = DiscordMessage(
     message.getId,
     message.getChannel.getId,
     User(message.getAuthor.getId),
@@ -33,6 +33,26 @@ object DiscordWrapperConverter {
     Option(message.getEditedTime).map(_.toString),
     message.isTTS,
     message.mentionsEveryone,
+    Seq(),
+    Seq(),
+    Seq(),
+    Seq(),
+    Seq(),
+    None,
+    message.isPinned,
+    None
+  )
+
+  import de.btobastian.javacord.entities.message.{Message => JavacordMessage}
+  implicit def convertMessage(message: JavacordMessage): DiscordMessage = DiscordMessage(
+    message.getId,
+    message.getChannelReceiver.getId,
+    User(message.getAuthor.getId),
+    message.getContent,
+    message.getCreationDate.toString,
+    None,
+    message.isTts,
+    message.isMentioningEveryone,
     Seq(),
     Seq(),
     Seq(),
