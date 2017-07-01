@@ -14,6 +14,7 @@ resolvers += "Twitter Maven" at "http://maven.twttr.com"
 resolvers += "jcenter" at "http://jcenter.bintray.com"
 
 val http4sVersion = "0.15.13a"
+val akkaVersion = "2.5.3"
 
 lazy val root = project
   .in(file("."))
@@ -39,7 +40,11 @@ lazy val sharedJvm = shared.jvm
   name := "tini-sharedJvm",
   libraryDependencies ++= Seq(
     //"eu.unicredit" %% "shocon" % "0.1.8"
-    "com.github.pureconfig" %% "pureconfig" % "0.7.2"))
+    "com.github.pureconfig" %% "pureconfig" % "0.7.2",
+    "com.typesafe.akka" %% "akka-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-stream" % "2.5.3",
+    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.3" % Test))
 
 lazy val sharedJs = shared.js
   //.in(file("sharedJs"))
