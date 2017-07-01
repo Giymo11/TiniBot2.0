@@ -14,7 +14,7 @@ class Discord4JIngestion(listener: DiscordMessage => Unit)(implicit config: Tini
 
   val discordClient: IDiscordClient =
     new ClientBuilder()
-        .withToken(config.discordKey)
+        .withToken(config.discordBotToken)
         .login()
 
   discordClient.getDispatcher.registerListener(

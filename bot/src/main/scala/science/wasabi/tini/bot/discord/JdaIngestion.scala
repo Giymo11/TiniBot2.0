@@ -19,7 +19,7 @@ class JdaIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig
 
   val jda: JDA =
     new JDABuilder(AccountType.BOT)
-      .setToken(config.discordKey)
+      .setToken(config.discordBotToken)
       .addEventListener(new ListenerAdapter {
         override def onReady(event: ReadyEvent): Unit = println("READY")
         override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
@@ -79,7 +79,7 @@ object JdaIngestionActor {
     val system: ActorSystem[Commands] = ActorSystem("jdaActor", starting)
 
     val jda = new JDABuilder(AccountType.BOT)
-      .setToken(config.discordKey)
+      .setToken(config.discordBotToken)
       .addEventListener(new ListenerAdapter {
         override def onReady(event: ReadyEvent): Unit = system ! Ready(event.getJDA)
       })

@@ -14,7 +14,7 @@ class JavacordIngestion(listener: DiscordMessage => Unit)(implicit config: TiniC
 
   val javacord: DiscordAPI =
     Javacord
-      .getApi(config.discordKey, true)
+      .getApi(config.discordBotToken, true)
 
   javacord.connect(new FutureCallback[DiscordAPI] {
     override def onFailure(t: Throwable): Unit = println("Shit happened in Javacord")
@@ -25,25 +25,3 @@ class JavacordIngestion(listener: DiscordMessage => Unit)(implicit config: TiniC
     }
   })
 }
-
-/* package science.wasabi.tini.bot.discord
-
-class JdaIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig) {
-
-  import DiscordWrapperConverter._
-
-  val jda: JDA =
-    new JDABuilder(AccountType.BOT)
-      .setToken(config.discordKey)
-      .addEventListener(new ListenerAdapter {
-        override def onReady(event: ReadyEvent): Unit = println("READY")
-        override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
-          listener(event.getMessage)
-        }
-        override def onPrivateMessageReceived(event: PrivateMessageReceivedEvent): Unit = {
-          listener(event.getMessage)
-        }
-      })
-      .buildAsync()
-}
-*/

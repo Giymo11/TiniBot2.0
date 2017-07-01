@@ -9,7 +9,7 @@ import scala.io.Source
 
 object Config {
   // Model for the config file
-  case class TiniConfig(apiKey: String, envExample: String, discordKey: String)
+  case class TiniConfig(apiKey: String, envExample: String, discordBotToken: String)
 
   val conf: TiniConfig = {
     val confString: String = Source
@@ -20,7 +20,6 @@ object Config {
     val hocon: TypesafeConfig = ConfigFactory.parseString(confString).resolve()
 
     import pureconfig._
-    import pureconfig.error.ConfigReaderFailures
 
     loadConfigOrThrow[TiniConfig](hocon)
   }
