@@ -3,7 +3,7 @@
 
 ## Installation
 
-Update the `discord-bot-token` to the application.conf file. You obtain it by adding an App via [https://discordapp.com/developers/applications/me](Discord Developer Portal).
+Update the `discord-bot-token` to the application.conf file. You obtain it by adding an App via [Discord Developer Portal](https://discordapp.com/developers/applications/me).
 
 * Choose "New App"
 * Create and select a new App
