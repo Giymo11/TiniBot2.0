@@ -1,11 +1,13 @@
 package science.wasabi.tini.bot.discord.pickle
 
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
+import science.wasabi.tini.config.Config
 import scala.util.matching.Regex
 import upickle.default._
 
 object Pickle{
 
+  implicit val config = Config.conf
   //RAW (!cast\s+(-(ana|obs|coc)\s+@\w+#\d*\s*|@\w+#\d+\s*){1,4}(\w+\s+vs\s+\w+)?)
   val regCommandExp = "!cast\\s+(-(ana|obs|coc)\\s+<@\\d+>*\\s*|<@\\d+>\\s*){1,4}(\\w+\\s+vs\\s+\\w+)?".r
 
@@ -16,6 +18,13 @@ object Pickle{
 
   val roleLibrary = Map("-cas" -> 2, "-ana" -> 1, "-obs" -> 3,"-coc" -> 4)
 
+  /**
+    *
+    * @param message a discord message to parse
+    * @param sendToServer send to specified server
+    * @param sendToTwitch not yet Implemented, default= false
+    * @return
+    */
   def parse(message: DiscordMessage) = {
     val casterMap = regCasterExp.findAllMatchIn(message.content).map(caster => {
       regRoleExp.findFirstMatchIn(caster.toString) match {
