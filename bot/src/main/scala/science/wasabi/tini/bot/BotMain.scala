@@ -5,6 +5,7 @@ import science.wasabi.tini._
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
+import science.wasabi.tini.bot.discord.pickle.Pickle
 import science.wasabi.tini.config.Config
 
 
@@ -26,6 +27,9 @@ object BotMain extends App {
         Actor.same
       case kill if kill.content == "!kill " + config.killSecret =>
         api ! Shutdown()
+        Actor.same
+      case cast if Pickle.isPickleable(cast.content) =>
+        api ! SendMessage(DiscordMessage(channel_id = cast.channel_id, content = Pickle.parse(cast)))
         Actor.same
       case text =>
         println("lol: " + text.content)
