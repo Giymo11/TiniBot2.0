@@ -1,4 +1,4 @@
-package science.wasabi.tini.bot.discord
+package science.wasabi.tini.bot.discord.ingestion
 
 
 import akka.typed.scaladsl.Actor
@@ -9,8 +9,10 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 
+import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.config.Config.TiniConfig
-import DiscordWrapperConverter.JdaConverter._
+
+import science.wasabi.tini.bot.discord.wrapper.DiscordWrapperConverter.JdaConverter._
 
 /**
   * A way to add listeners as lambdas

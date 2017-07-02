@@ -1,6 +1,4 @@
-package science.wasabi.tini.bot.discord
-
-
+package science.wasabi.tini.bot.discord.wrapper
 
 trait DiscordObject {
   type Snowflake = String

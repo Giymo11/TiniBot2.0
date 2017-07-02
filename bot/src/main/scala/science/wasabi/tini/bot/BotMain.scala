@@ -1,9 +1,12 @@
 package science.wasabi.tini.bot
 
+
 import science.wasabi.tini._
-import science.wasabi.tini.bot.discord.JdaIngestionActor._
-import science.wasabi.tini.bot.discord._
+import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
+import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
+import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.config.Config
+
 
 object BotMain extends App {
   println(Helper.greeting)
@@ -31,7 +34,6 @@ object BotMain extends App {
   }
 
   implicit val messageHandler = respondingActor _
-
   val ingestionActor = JdaIngestionActor.startup
 }
 

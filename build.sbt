@@ -52,6 +52,7 @@ lazy val sharedJs = shared.js
   scalaVersion := scalaV,
   name := "tini-sharedJs")
 
+lazy val akkaCord = ProjectRef(uri("git://github.com/Katrix-/AkkaCord.git"), "akkaCord")
 lazy val bot = project
   .in(file("bot"))
   .settings(
@@ -66,6 +67,7 @@ lazy val bot = project
       "de.btobastian.javacord" % "javacord" % "2.0.14"
     ))
   .dependsOn(sharedJvm)
+  .dependsOn(akkaCord)
 
 lazy val web = project
   .in(file("web"))

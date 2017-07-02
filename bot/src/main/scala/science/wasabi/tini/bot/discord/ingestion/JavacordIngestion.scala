@@ -1,16 +1,19 @@
-package science.wasabi.tini.bot.discord
+package science.wasabi.tini.bot.discord.ingestion
 
 
 import com.google.common.util.concurrent.FutureCallback
+
 import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.message.MessageCreateListener
 import de.btobastian.javacord.{DiscordAPI, Javacord}
+
+import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.config.Config.TiniConfig
 
 
 class JavacordIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig) {
 
-  import DiscordWrapperConverter.JavacordConverter._
+  import science.wasabi.tini.bot.discord.wrapper.DiscordWrapperConverter.JavacordConverter._
 
   val javacord: DiscordAPI =
     Javacord
