@@ -64,7 +64,9 @@ lazy val bot = project
     libraryDependencies ++= Seq(
       "net.dv8tion" % "JDA" % "3.1.0_204",
       "com.github.austinv11" % "Discord4J" % "2.8.4",
-      "de.btobastian.javacord" % "javacord" % "2.0.14"
+      "de.btobastian.javacord" % "javacord" % "2.0.14",
+      "com.lihaoyi" %% "upickle" % "0.4.4",
+      "org.scalaj" %% "scalaj-http" % "2.3.0"
     ))
   .dependsOn(sharedJvm)
   .dependsOn(akkaCord)
