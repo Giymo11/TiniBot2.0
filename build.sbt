@@ -72,7 +72,9 @@ lazy val bot = project
       // Optional for auto-derivation of JSON codecs
       "io.circe" %% "circe-generic" % "0.6.1",
       // Optional for string interpolation to JSON model
-      "io.circe" %% "circe-literal" % "0.6.1"
+      "io.circe" %% "circe-literal" % "0.6.1",
+      "com.lihaoyi" %% "upickle" % "0.4.4",
+      "org.scalaj" %% "scalaj-http" % "2.3.0"
     ))
   .dependsOn(sharedJvm)
   .dependsOn(akkaCord)
