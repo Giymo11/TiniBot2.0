@@ -2,7 +2,7 @@
 import sbtcrossproject.{crossProject, CrossType}
 
 name := "TiniBot2.0"
-version := "1.0"
+version := "2.0"
 
 val scalaV = "2.12.2"
 
@@ -41,10 +41,12 @@ lazy val sharedJvm = shared.jvm
   libraryDependencies ++= Seq(
     //"eu.unicredit" %% "shocon" % "0.1.8"
     "com.github.pureconfig" %% "pureconfig" % "0.7.2",
+    "com.chuusai" %% "shapeless" % "2.3.2",
     "com.typesafe.akka" %% "akka-typed" % akkaVersion,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-    "com.typesafe.akka" %% "akka-stream" % "2.5.3",
-    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.3" % Test))
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-http" % "10.0.9" ))
 
 lazy val sharedJs = shared.js
   //.in(file("sharedJs"))
@@ -64,7 +66,13 @@ lazy val bot = project
     libraryDependencies ++= Seq(
       "net.dv8tion" % "JDA" % "3.1.0_204",
       "com.github.austinv11" % "Discord4J" % "2.8.4",
-      "de.btobastian.javacord" % "javacord" % "2.0.14"
+      "de.btobastian.javacord" % "javacord" % "2.0.14",
+      "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+      "org.http4s" %% "http4s-circe" % http4sVersion,
+      // Optional for auto-derivation of JSON codecs
+      "io.circe" %% "circe-generic" % "0.6.1",
+      // Optional for string interpolation to JSON model
+      "io.circe" %% "circe-literal" % "0.6.1"
     ))
   .dependsOn(sharedJvm)
   .dependsOn(akkaCord)

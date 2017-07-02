@@ -2,6 +2,7 @@ package science.wasabi.tini.bot
 
 
 import science.wasabi.tini._
+import science.wasabi.tini.bot.commands.{Command, Wanikani}
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
@@ -19,21 +20,28 @@ object BotMain extends App {
   import akka.typed._
   import akka.typed.scaladsl.Actor
 
-  def respondingActor(api: ActorRef[Commands]): Behavior[DiscordMessage] = Actor.immutable {
-    (ctx, message) => message match {
-      case ping if ping.content == "!ping" =>
-        api ! SendMessage(DiscordMessage(channel_id = ping.channel_id, content = "PONG!"))
+  object PingCommand extends Command {override def prefix: String = "!ping"}
+  object KillCommand extends Command {override def prefix: String = "!kill " + config.killSecret}
+
+  def respondingActor(api: ActorRef[JdaCommands]): Behavior[DiscordMessage] = Actor.immutable {
+    (ctx, message) => message.content match {
+      case PingCommand(args) =>
+        api ! SendMessage(message.createReply("PONG!"))
         Actor.same
-      case kill if kill.content == "!kill " + config.killSecret =>
+      case KillCommand(args) =>
         api ! Shutdown()
         Actor.same
       case text =>
-        println("lol: " + text.content)
+        println("lol: " + text)
         Actor.same
     }
   }
 
-  implicit val messageHandler = respondingActor _
-  val ingestionActor = JdaIngestionActor.startup
+
+  val handlers: Seq[ActorRef[JdaCommands] => Behavior[DiscordMessage]] = Seq(
+    respondingActor(_),
+    Wanikani.wanikaniCommandActor(_)(Map())
+  )
+  val ingestionActor = JdaIngestionActor.startup(handlers)
 }
 

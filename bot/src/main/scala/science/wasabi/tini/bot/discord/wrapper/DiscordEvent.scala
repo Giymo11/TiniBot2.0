@@ -30,5 +30,7 @@ case class DiscordMessage(
   nonce: Option[String]= None,
   pinned: Boolean = false,
   webhook_id: Option[String] = None
-) extends DiscordObject {}
+) extends DiscordObject {
+  def createReply(newContent: String) = copy(content = newContent)
+}
 
