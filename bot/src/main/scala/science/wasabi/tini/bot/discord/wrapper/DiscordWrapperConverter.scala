@@ -79,7 +79,7 @@ object DiscordWrapperConverter {
     implicit def convertMessage(message: AkkaCordMessage): DiscordMessage = DiscordMessage(
       message.id.toString,
       message.channelId.toString,
-      User(""), // TODO: proper handling of this stuff
+      User(message.author.toString), // TODO: proper handling of this stuff
       message.content,
       message.timestamp.toString,
       message.editedTimestamp.map(_.toString),

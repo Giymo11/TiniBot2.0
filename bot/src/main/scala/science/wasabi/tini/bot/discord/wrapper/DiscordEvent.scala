@@ -32,5 +32,6 @@ case class DiscordMessage(
   webhook_id: Option[String] = None
 ) extends DiscordObject {
   def createReply(newContent: String) = copy(content = newContent)
+  def createUserReply(newContent: String) = copy(channel_id = author.id, content = newContent)
 }
 

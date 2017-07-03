@@ -1,11 +1,12 @@
 /**
   * Created by Stefl1504 on 02.07.2017.
   */
-package science.wasabi.tini.bot.discord.pickle
+package science.wasabi.tini.bot.commands.webstream
 
 import java.security.MessageDigest
 import java.util.Base64
 import java.math.BigInteger
+
 
 object DataPackets {
   val base64 = Base64.getEncoder

@@ -3,10 +3,10 @@ package science.wasabi.tini.bot
 
 import science.wasabi.tini._
 import science.wasabi.tini.bot.commands.{Command, Wanikani}
+import science.wasabi.tini.bot.commands.webstream.Webstream
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
-import science.wasabi.tini.bot.discord.pickle.Pickle
 import science.wasabi.tini.config.Config
 
 
@@ -32,9 +32,6 @@ object BotMain extends App {
       case KillCommand(args) =>
         api ! Shutdown()
         Actor.same
-      case cast if Pickle.isPickleable(cast.content) =>
-        api ! SendMessage(DiscordMessage(channel_id = cast.channel_id, content = Pickle.parse(cast)))
-        Actor.same
       case text =>
         println("lol: " + text)
         Actor.same
@@ -44,8 +41,10 @@ object BotMain extends App {
 
   val handlers: Seq[ActorRef[JdaCommands] => Behavior[DiscordMessage]] = Seq(
     respondingActor(_),
-    Wanikani.wanikaniCommandActor(_)(Map())
+    Wanikani.wanikaniCommandActor(_)(Map()),
+    Webstream.webstreamActor(_)
   )
+
   val ingestionActor = JdaIngestionActor.startup(handlers)
 }
 
