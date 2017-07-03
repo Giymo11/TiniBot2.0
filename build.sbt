@@ -15,6 +15,7 @@ resolvers += "jcenter" at "http://jcenter.bintray.com"
 
 val http4sVersion = "0.15.13a"
 val akkaVersion = "2.5.3"
+val circeVersion = "0.8.0"
 
 lazy val root = project
   .in(file("."))
@@ -46,7 +47,8 @@ lazy val sharedJvm = shared.jvm
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-stream" % akkaVersion,
     "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
-    "com.typesafe.akka" %% "akka-http" % "10.0.9" ))
+    "com.typesafe.akka" %% "akka-http" % "10.0.9",
+    "org.specs2" %% "specs2-core" % "3.9.1" % Test))
 
 lazy val sharedJs = shared.js
   //.in(file("sharedJs"))
@@ -67,12 +69,15 @@ lazy val bot = project
       "net.dv8tion" % "JDA" % "3.1.0_204",
       "com.github.austinv11" % "Discord4J" % "2.8.4",
       "de.btobastian.javacord" % "javacord" % "2.0.14",
+      "org.http4s" %% "http4s-core" % http4sVersion,
+      "org.http4s" %% "http4s-dsl" % http4sVersion,
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-circe" % http4sVersion,
-      // Optional for auto-derivation of JSON codecs
-      "io.circe" %% "circe-generic" % "0.6.1",
-      // Optional for string interpolation to JSON model
-      "io.circe" %% "circe-literal" % "0.6.1"
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-literal" % circeVersion,
+      "org.specs2" %% "specs2-core" % "3.9.1" % Test
     ))
   .dependsOn(sharedJvm)
   .dependsOn(akkaCord)
