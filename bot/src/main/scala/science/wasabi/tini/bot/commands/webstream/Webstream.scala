@@ -78,6 +78,8 @@ object Webstream{
       case CastCommand(args) =>
         api ! SendMessage(message.createReply(parseCast(message)))
         Actor.same
+      case _ =>
+        Actor.same
     }
   }
 }
