@@ -27,7 +27,7 @@ object Webstream{
   case class Cast() extends Event
   case class Host() extends Event
 
-  object CastCommand extends Command{override def prefix: String = "!cast"}
+  object CastCommand extends Command{override def prefix: String = "!cast "}
   object HostCommand extends Command{override def prefix: String = "!host"}
   object CastHelpCommand extends Command{override def prefix: String = "!cast help"}
 
@@ -60,7 +60,7 @@ object Webstream{
 
         "The Data was pickled as follows: " + write(pickledData)
       case None =>
-        "!cast command malformed"
+        "the !cast command was malformed"
     }
   }
 
