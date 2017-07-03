@@ -6,7 +6,11 @@ import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.bot.commands.Command
 import science.wasabi.tini.config.Config
 import scala.util.matching.Regex
+import org.http4s._
+import org.http4s.client._
+import org.http4s.client.blaze.PooledHttp1Client
 import upickle.default._
+import scalaz.concurrent.Task
 import akka.typed._
 import akka.typed.scaladsl.Actor
 
@@ -30,6 +34,7 @@ object Webstream{
   object CastCommand extends Command{override def prefix: String = "!cast "}
   object HostCommand extends Command{override def prefix: String = "!host"}
   object CastHelpCommand extends Command{override def prefix: String = "!cast help"}
+  object EndStreamCommand extends Command{override def prefix: String = "!endstream"}
 
 
   /**
@@ -48,15 +53,23 @@ object Webstream{
               caster.toString.trim().drop(2).takeWhile(c => c != '>') -> Seq(2, 150490123478009777l)
           }
         }).toMap
-        val pickledData = DataPackets.pickleCasters(casterMap)
-        if (config.serverSend) {
+        val pickledData = DataPackets.pickleCasters(casterMap, config.saltString)
+        val serverRespond = if (config.webstreamServerSend) {
+          implicit val httpClient = PooledHttp1Client()
+          Uri.fromString(config.webstreamServer).toOption match {
+            case Some(a) =>
+              val request = Method.POST (a, "json_string = " + pickledData)
+              val responseBody = httpClient.expect[String] (request)
+              responseBody.attemptRun
+            case _ =>
+              "wrongly configured"
+          }
+        } else ""
+        val twitchRespond = if (config.twitchChannelSend){
+          "nothing here but void"
+        } else ""
 
-        }
-        if (config.twitchChannelSend){
-
-        }
-
-        "The Data was pickled as follows: " + write(pickledData)
+        "The Data was pickled as follows: " + write(pickledData) + "; Server said: " + serverRespond + "; Twitch said: " + twitchRespond
       case None =>
         "the !cast command was malformed"
     }
@@ -72,6 +85,10 @@ object Webstream{
       "a `team1 vs team2` modifier can be put at the end of the line."
   }
 
+  private def endStream() = {
+    "nothing here but void"
+  }
+
   /**
     *
     * @param api the api to use for output
@@ -85,8 +102,17 @@ object Webstream{
       case CastCommand(args) =>
         api ! SendMessage(message.createReply(parseCast(message)))
         Actor.same
+      case EndStreamCommand(args) =>
+        api ! SendMessage(message.createReply(endStream()))
+        Actor.same
       case _ =>
         Actor.same
     }
   }
+
+  /*def webstreamHttpActor(api: ActorRef[JdaCommands]): Behavior[Event] = Actor.immutable {
+    implicit val httpClient = PooledHttp1Client()
+    val target = Uri.uri(config.webstreamServer.withQueryParam("json_String", Event.content)
+    httpClient.expect[String](target)
+  }*/
 }

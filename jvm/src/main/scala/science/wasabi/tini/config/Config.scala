@@ -9,7 +9,7 @@ import scala.io.Source
 
 object Config {
   // Model for the config file
-  case class TiniConfig(apiKey: String, envExample: String, discordBotToken: String, killSecret: String, serverSend: Boolean, twitchChannelSend: Boolean)
+  case class TiniConfig(apiKey: String, envExample: String, discordBotToken: String, killSecret: String, webstreamServer: String, webstreamServerSend: Boolean, twitchChannelSend: Boolean, saltString: String)
 
   val conf: TiniConfig = {
     val confString: String = Source

@@ -30,18 +30,18 @@ object DataPackets {
     generateSignature(toPickle)
   }
 
-  def pickleCasters(casters: Map[String, Seq[Long]]) = {
+  def pickleCasters(casters: Map[String, Seq[Long]], salt: String = "") = {
     val prePickle = casters.keys.map(name => {
       Caster(name, casters(name)(0), casters(name)(1))
     }).toSeq
     val toPickle = GrandPickle(prePickle, System.currentTimeMillis())
-    generateSignature(toPickle)
+    generateSignature(toPickle, salt)
   }
 
-  def generateSignature(pickle: GrandPickle) = {
+  def generateSignature(pickle: GrandPickle, salt: String = "") = {
     val appliedString = pickle.toString
     val splitIndex = appliedString.length()/2 + appliedString.length() % 2
-    val hashString = appliedString.take(splitIndex) + "superSecretSaltString" + appliedString.drop(splitIndex)
+    val hashString = appliedString.take(splitIndex) + salt + appliedString.drop(splitIndex)
     val hash = new BigInteger(1, digester.digest(hashString.getBytes("UTF-8"))).toString(16)
     pickle.copy(signature = new String(base64.encode(hash.getBytes("UTF-8"))))
   }
