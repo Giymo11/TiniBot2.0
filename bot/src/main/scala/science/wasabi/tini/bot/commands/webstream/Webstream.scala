@@ -33,13 +33,11 @@ object Webstream{
 
 
   /**
-    *
+    * pickles data to twitch-channel or server depending on application.config
     * @param message a discord message to parse
-    * @param sendToServer send to specified server
-    * @param sendToTwitch not yet Implemented, default= false
-    * @return
+    * @return a response string for the user
     */
-  def parseCast(message: DiscordMessage) = {
+  private def parseCast(message: DiscordMessage) = {
     regCommandExp.findFirstMatchIn(message.content) match {
       case Some(_) =>
         val casterMap = regCasterExp.findAllMatchIn(message.content).map(caster => {
@@ -64,16 +62,25 @@ object Webstream{
     }
   }
 
-  def castHelp() = {
+  /**
+    * a string returner that explains the syntax for the !user command
+    * @return a string containing help for the command !user
+    */
+  final private def castHelp() = {
     "`!cast @mention` is the minimal command, you can place up to 4 mentions, each mention can have a precending " +
       " role modifier: `-ana` for Analyst `-cas` for Caster(default) `-coc` for Co-Caster and `-obs` for Observer," +
       "a `team1 vs team2` modifier can be put at the end of the line."
   }
 
+  /**
+    *
+    * @param api the api to use for output
+    * @return Actor.same
+    */
   def webstreamActor(api: ActorRef[JdaCommands]): Behavior[DiscordMessage] = Actor.immutable {
     (ctx, message) => message.content match{
       case CastHelpCommand(args) =>
-        api ! SendMessage(message.createUserReply(castHelp()))
+        api ! SendMessage(message.createReply(castHelp()))
         Actor.same
       case CastCommand(args) =>
         api ! SendMessage(message.createReply(parseCast(message)))
