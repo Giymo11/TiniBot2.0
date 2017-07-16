@@ -3,10 +3,12 @@ package science.wasabi.tini.bot
 
 import science.wasabi.tini._
 import science.wasabi.tini.bot.commands.{Command, Wanikani}
-import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
+import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.config.Config
+
+import scala.util.{Failure, Success, Try}
 
 
 object BotMain extends App {
@@ -37,11 +39,19 @@ object BotMain extends App {
     }
   }
 
-
   val handlers: Seq[ActorRef[JdaCommands] => Behavior[DiscordMessage]] = Seq(
     respondingActor(_),
     Wanikani.wanikaniCommandActor(_)(Map())
   )
-  val ingestionActor = JdaIngestionActor.startup(handlers)
+
+  val ingestionActor = Try {
+    JdaIngestionActor.startup(handlers)
+  } match {
+    case Success(actor) => actor
+    case Failure(_) =>
+      System.err.println("Could not load JDA, shutting down Bot ...")
+      System.exit(1)
+  }
+
 }
 
