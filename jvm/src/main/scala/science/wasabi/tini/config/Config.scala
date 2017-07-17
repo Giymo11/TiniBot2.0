@@ -9,7 +9,8 @@ import scala.io.Source
 
 object Config {
   // Model for the config file
-  case class TiniConfig(apiKey: String, envExample: String, discordBotToken: String, killSecret: String)
+  case class TiniConfig(apiKey: String, envExample: String, discordBotToken: String, killSecret: String, kafka: Kafka)
+  case class Kafka(server: String, port: Short, topic: String, shemaURI: String)
 
   val conf: TiniConfig = {
     val confString: String = Source
