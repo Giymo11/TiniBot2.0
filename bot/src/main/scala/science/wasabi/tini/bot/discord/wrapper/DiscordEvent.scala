@@ -11,7 +11,7 @@ trait DiscordObject {
   type Reaction = DiscordObject
 }
 
-case class User(id: String) extends DiscordObject
+case class User(id: String, name: String) extends DiscordObject
 
 case class DiscordMessage(
   id: String = "",

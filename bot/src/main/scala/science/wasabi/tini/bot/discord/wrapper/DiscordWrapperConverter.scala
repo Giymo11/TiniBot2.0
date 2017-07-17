@@ -9,7 +9,7 @@ object DiscordWrapperConverter {
     implicit def convertMessage(message: JdaMessage): DiscordMessage = DiscordMessage(
       message.getId,
       message.getChannel.getId,
-      User(message.getAuthor.getId),
+      User(message.getAuthor.getId, message.getAuthor.getName),
       message.getRawContent,
       message.getCreationTime.toString,
       Option(message.getEditedTime).map(_.toString),
@@ -35,7 +35,7 @@ object DiscordWrapperConverter {
     implicit def convertMessage(message: Discord4JMessage): DiscordMessage = DiscordMessage(
       message.getStringID,
       message.getChannel.getStringID,
-      User(message.getAuthor.getStringID),
+      User(message.getAuthor.getStringID, message.getAuthor.getName),
       message.getContent,
       message.getCreationDate.toString,
       Option(message.getEditedTimestamp.orElseGet(null)).map(_.toString),
@@ -57,7 +57,7 @@ object DiscordWrapperConverter {
     implicit def convertMessage(message: JavacordMessage): DiscordMessage = DiscordMessage(
       message.getId,
       message.getChannelReceiver.getId,
-      User(message.getAuthor.getId),
+      User(message.getAuthor.getId, message.getAuthor.getName),
       message.getContent,
       message.getCreationDate.toString,
       None,
@@ -79,7 +79,7 @@ object DiscordWrapperConverter {
     implicit def convertMessage(message: AkkaCordMessage): DiscordMessage = DiscordMessage(
       message.id.toString,
       message.channelId.toString,
-      User(""), // TODO: proper handling of this stuff
+      User("",""), // TODO: proper handling of this stuff
       message.content,
       message.timestamp.toString,
       message.editedTimestamp.map(_.toString),
