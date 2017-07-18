@@ -2,15 +2,20 @@ package science.wasabi.tini.bot.kafka
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
+import akka.Done
 import akka.actor.ActorSystem
 import akka.kafka.scaladsl.{Consumer, Producer}
 import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
-import akka.stream.scaladsl.Source
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
+import akka.stream.scaladsl.{Sink, Source}
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
+import science.wasabi.tini.bot.BotMain.{NoOp, UnkownCommand}
 import science.wasabi.tini.bot.commands.Command
 import science.wasabi.tini.config.Config.TiniConfig
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 
 class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
@@ -20,7 +25,7 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
   private val producerSettings = ProducerSettings(system, new ByteArraySerializer, new ByteArraySerializer)
     .withBootstrapServers(kafkaServer)
 
-  val sink = Producer.plainSink(producerSettings)
+  val sink: Sink[ProducerRecord[Array[Byte], Array[Byte]], Future[Done]] = Producer.plainSink(producerSettings)
 
   def mapToCommandTopic(command: Command): ProducerRecord[Array[Byte], Array[Byte]] = {
     println("in: " + command)
@@ -43,12 +48,19 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
     val partition = 0
     val offset = 0L // starts from beginnning; TODO: save offset somewhere
     val subscription = Subscriptions.topics(config.kafka.topic)
+
     Consumer.plainSource(consumerSettings, subscription).map(record => {
-      val in = new ByteArrayInputStream(record.value())
-      val is = new ObjectInputStream(in)
-      val obj = is.readObject()
-      is.close()
-      obj.asInstanceOf[Command]
+      def fromBinary(data: Array[Byte]): Command = {
+        val in = new ByteArrayInputStream(record.value())
+        val is = new ObjectInputStream(in)
+        val obj = is.readObject()
+        is.close()
+        in.close()
+
+        obj.asInstanceOf[Command]
+      }
+
+      Try(fromBinary(record.value())).fold(ex => UnkownCommand(ex.getMessage), c => c)
     })
   }
 }

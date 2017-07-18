@@ -1,7 +1,7 @@
 package science.wasabi.tini.bot
 
 
-import akka.{Done, NotUsed}
+import akka.NotUsed
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import science.wasabi.tini._
@@ -11,15 +11,16 @@ import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.config.Config
 
-import scala.concurrent.Future
-
 
 object BotMain extends App {
   println(Helper.greeting)
+
   implicit val config = Config.conf
+  CommandRegistry.configure(config.bot.commands)
 
   case class Ping(override val args: String) extends Command(args) {}
   case class NoOp(override val args: String) extends Command(args) {}
+  case class UnkownCommand(override val args: String) extends Command(args) {}
 
   "!ping" match {
     case CommandRegistry(command) => println("testo: " + command)
