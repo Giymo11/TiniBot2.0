@@ -31,6 +31,7 @@ Serialization
     val is = new ObjectInputStream(in)
 
     val obj = is.readObject()
+    is.close()
 
     car must_==(obj)
   }

@@ -12,8 +12,8 @@ import scalaz.{-\/, \/, \/-}
 
 object Wanikani {
 
-  object AddCommand extends Command {override def prefix: String = "!wanikani add "}
-  object RemoveCommand extends Command {override def prefix: String = "!wanikani remove"}
+  case class AddCommand(override val args: String) extends Command(args: String) {}
+  case class  RemoveCommand(override val args: String) extends Command(args: String) {}
 
   sealed trait Event
   case class Tick() extends Event
@@ -111,12 +111,12 @@ object Wanikani {
   def wanikaniCommandActor(api: ActorRef[JdaCommands])(subs: Map[DiscordInfo, ActorRef[Event]]): Behavior[DiscordMessage] = Actor.immutable {
     implicit val httpClient = PooledHttp1Client()
     (ctx, message) => message.content match {
-      case AddCommand(args) =>
+      case CommandRegistry(x) if x.isInstanceOf[AddCommand] =>
         // TODO: add the wanikani key via DM, then activate the reports on a channel with a different one.
         api ! SendMessage(message.createReply("Will do! :ok_hand:"))
 
         val discordInfo = DiscordInfo(message.channel_id, message.author.id)
-        val sub = discordInfo -> WanikaniQueueState(args)
+        val sub = discordInfo -> WanikaniQueueState(x.args)
         val existingActor = subs.get(discordInfo)
 
         existingActor.foreach(_ ! Kill())
@@ -126,7 +126,7 @@ object Wanikani {
 
         wanikaniCommandActor(api)(subs + (discordInfo -> actor))
 
-      case RemoveCommand(args) =>
+      case CommandRegistry(x) if x.isInstanceOf[AddCommand] =>
         api ! SendMessage(message.createReply("OK! :ok_hand:"))
 
         val discordInfo = DiscordInfo(message.channel_id, message.author.id)
