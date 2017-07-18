@@ -38,9 +38,10 @@ object BotMain extends App {
 
   // read from kafka
   val commandStreamFromKafka = streams.sourceFromCommandTopic()
-  commandStreamFromKafka.map(command => println("out: " + command))
-  .runWith(Sink.ignore)
-  .foreach(_ => println("Done Consuming"))
+  commandStreamFromKafka
+    .map(command => println("out: " + command))
+    .runWith(Sink.ignore)
+    .foreach(_ => println("Done Consuming"))
 
   // TODO: add the reply steam thingy
 }

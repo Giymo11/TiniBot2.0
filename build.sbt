@@ -31,8 +31,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     name := "tini-shared",
     scalaVersion := scalaV,
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats" % "0.9.0",
-      "com.github.benhutchison" %%% "prickle" % "1.1.13"
+      "org.typelevel" %%% "cats" % "0.9.0"
     ))
 
 lazy val sharedJvm = shared.jvm
@@ -50,7 +49,6 @@ lazy val sharedJvm = shared.jvm
     "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-http" % "10.0.9",
     "org.specs2" %% "specs2-core" % "3.9.1" % Test,
-    "com.sksamuel.avro4s" %% "avro4s-core" % "1.7.0",
     "com.typesafe.akka" %% "akka-stream-kafka" % "0.16"))
 
 lazy val sharedJs = shared.js
@@ -69,9 +67,6 @@ lazy val bot = project
     resolvers += "jitpack.io" at "https://jitpack.io",
     resolvers += "javacord-repo" at "http://repo.bastian-oppermann.de",
     libraryDependencies ++= Seq(
-      "net.dv8tion" % "JDA" % "3.1.0_204",
-      "com.github.austinv11" % "Discord4J" % "2.8.4",
-      "de.btobastian.javacord" % "javacord" % "2.0.14",
       "org.http4s" %% "http4s-core" % http4sVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion,
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,

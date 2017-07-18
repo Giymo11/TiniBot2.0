@@ -30,7 +30,7 @@ WanikaniTest
       |{
       |  "user_information" : {
       |    "username" : "Gsfdgdfg11",
-      |    "gravatar" : "271fdb48dsgsdfgefabfb8c575237854",
+      |    "gravatar" : "271fdb48dsgfsddf5237854",
       |    "level" : 7,
       |    "title" : "Turtles",
       |    "about" : "",
@@ -57,11 +57,9 @@ WanikaniTest
 
     val cursor = doc.hcursor
     cursor.downField("values").downField("baz").as[Double].isRight must beTrue
-
   }
 
   def e2 = {
-    import Wanikani._
     // TODO: fix this test
     true must beTrue
   }
