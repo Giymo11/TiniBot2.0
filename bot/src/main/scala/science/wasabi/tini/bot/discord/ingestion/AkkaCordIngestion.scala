@@ -1,34 +1,32 @@
 package science.wasabi.tini.bot.discord.ingestion
 
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.NotUsed
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.EventStream
-
+import akka.stream.scaladsl._
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import net.katsstuff.akkacord.{APIMessage, DiscordClientSettings}
-
-import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
+import science.wasabi.tini.bot.discord.wrapper.{DiscordMessage, DiscordWrapperConverter}
 import science.wasabi.tini.config.Config.TiniConfig
 
-import science.wasabi.tini.bot.discord.wrapper.DiscordWrapperConverter.AkkaCordConverter._
 
-
-class AkkaCordIngestion(listener: DiscordMessage => Unit)(implicit config: TiniConfig) {
+class AkkaCordIngestion(implicit config: TiniConfig) extends Ingestion {
   implicit val system: ActorSystem = ActorSystem("AkkaCord")
+  implicit val materializer = ActorMaterializer()
 
-  val eventStream = new EventStream(system)
+  private val eventStream = new EventStream(system)
 
   val client: ActorRef = DiscordClientSettings(token = config.discordBotToken, system = system, eventStream = eventStream).connect
 
-  val props = Props(classOf[Commands], listener)
-  eventStream.subscribe(
-    system.actorOf(props, "CommandActor"),
-    classOf[APIMessage.MessageCreate]
-  )
-}
+  private val (ref, publisher) = Source.actorRef[APIMessage.MessageCreate](32, OverflowStrategy.dropHead)
+    .map(in => DiscordWrapperConverter.AkkaCordConverter.convertMessage(in.message))
+    .toMat(Sink.asPublisher(true))(Keep.both)
+    .run()
 
-class Commands(listener: DiscordMessage => Unit) extends Actor with ActorLogging {
-  override def receive: Receive = {
-    case APIMessage.MessageCreate(message, cacheSnapshot, prevSnapshot) =>
-      listener(message)
-  }
+  eventStream.subscribe(ref, classOf[APIMessage.MessageCreate])
+
+  val source: Source[DiscordMessage, NotUsed] = Source.fromPublisher(publisher)
+
+  def shutdown() = system.terminate()
 }

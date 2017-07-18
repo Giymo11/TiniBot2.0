@@ -1,78 +1,55 @@
 package science.wasabi.tini.bot
 
 
+import akka.NotUsed
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Source}
 import science.wasabi.tini._
-import science.wasabi.tini.bot.commands.{Command, Wanikani}
-import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
-import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
+import science.wasabi.tini.bot.commands._
+import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, Ingestion}
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
-import science.wasabi.tini.bot.kafka.{KafkaCommandProducer, KafkaCommandConsumer}
+import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.config.Config
-
-import scala.util.{Failure, Success, Try}
 
 
 object BotMain extends App {
   println(Helper.greeting)
 
-  println("Key = " + Config.conf.apiKey)
-  println("Path = " + Config.conf.envExample)
-
   implicit val config = Config.conf
+  CommandRegistry.configure(config.bot.commands)
 
-  import com.sksamuel.avro4s.AvroSchema
-  println(AvroSchema[protocol.Command])
+  case class Ping(override val args: String) extends Command(args) {}
+  case class NoOp(override val args: String) extends Command(args) {}
+  case class UnkownCommand(override val args: String) extends Command(args) {}
 
-
-
-  import akka.typed._
-  import akka.typed.scaladsl.Actor
-
-  object PingCommand extends Command {override def prefix: String = "!ping"}
-  object KillCommand extends Command {override def prefix: String = "!kill " + config.killSecret}
-
-  def respondingActor(api: ActorRef[JdaCommands]): Behavior[DiscordMessage] = Actor.immutable {
-    import science.wasabi.tini.bot.protocol.KafkaProtocolConverter._
-
-    (ctx, message) => message.content match {
-      case PingCommand(args) =>
-        kafkaProducer.produce(message)
-
-        api ! SendMessage(message.createReply("PONG!"))
-        Actor.same
-      case KillCommand(args) =>
-        kafkaProducer.produce(message)
-
-        api ! Shutdown()
-        Actor.same
-      case text =>
-        println("lol: " + text)
-        Actor.same
-    }
-
-
+  "!ping" match {
+    case CommandRegistry(command) => println("testo: " + command)
   }
 
-  val handlers: Seq[ActorRef[JdaCommands] => Behavior[DiscordMessage]] = Seq(
-    respondingActor(_),
-    Wanikani.wanikaniCommandActor(_)(Map())
-  )
+  val ingestion: Ingestion = new AkkaCordIngestion
 
-  val ingestionActor = Try {
-    JdaIngestionActor.startup(handlers)
-  } match {
-    case Success(actor) => actor
-    case Failure(_) =>
-      System.err.println("Could not load JDA, shutting down Bot ...")
-      System.exit(1)
-  }
+  import scala.concurrent.ExecutionContext.Implicits.global
+  implicit val system = akka.actor.ActorSystem("kafka")
+  implicit val materializer = ActorMaterializer()
 
+  val streams = new KafkaStreams
 
-  val kafkaProducer = new KafkaCommandProducer(config.kafka.topic)
-  val kafkaConsumer = new KafkaCommandConsumer(config.kafka.topic)
-  val consumerPollThread = new Thread(kafkaConsumer)
-  consumerPollThread.setDaemon(true)
-  consumerPollThread.start()
+  // pipe to kafka
+  val discordMessageStream: Source[DiscordMessage, NotUsed] = ingestion.source
+  val commandStream: Source[Command, NotUsed] = discordMessageStream.mapConcat[Command](dmsg =>
+    CommandRegistry.getCommandsFor(dmsg.content)
+  ) // TODO: actually map to commands
+  val commandTopicStream = commandStream.map(streams.mapToCommandTopic)
+  commandTopicStream
+    .runWith(streams.sink)
+    .foreach(_ => println("Done Producing"))
 
+  // read from kafka
+  val commandStreamFromKafka = streams.sourceFromCommandTopic()
+  commandStreamFromKafka.map(command => println("out: " + command))
+  .runWith(Sink.ignore)
+  .foreach(_ => println("Done Consuming"))
+
+  // TODO: add the reply steam thingy
 }
 
