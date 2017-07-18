@@ -22,7 +22,7 @@ object CommandRegistry {
     }
 }
 
-abstract class Command(argsIn: String) {
+abstract class Command(argsIn: String) extends Serializable {
   val args: String = argsIn
 }
 

@@ -6,11 +6,13 @@ import akka.actor.ActorSystem
 import akka.kafka.scaladsl.{Consumer, Producer}
 import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
 import akka.stream.scaladsl.Source
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
 import science.wasabi.tini.bot.commands.Command
 import science.wasabi.tini.config.Config.TiniConfig
+
+import scala.util.Try
 
 
 class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
@@ -33,7 +35,7 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
     new ProducerRecord[Array[Byte], Array[Byte]](config.kafka.topic, bytes)
   }
 
-  def sourceFromCommandTopic(): Source[Command, Consumer.Control] = {
+  def sourceFromCommandTopic(): Source[Try[Command], Consumer.Control] = {
     // kafka consumer
     val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
       .withBootstrapServers(kafkaServer)
@@ -44,11 +46,13 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
     val offset = 0L // starts from beginnning; TODO: save offset somewhere
     val subscription = Subscriptions.topics(config.kafka.topic)
     Consumer.plainSource(consumerSettings, subscription).map(record => {
-      val in = new ByteArrayInputStream(record.value())
-      val is = new ObjectInputStream(in)
-      val obj = is.readObject()
-      is.close()
-      obj.asInstanceOf[Command]
+      Try{
+        val in = new ByteArrayInputStream(record.value())
+        val is = new ObjectInputStream(in)
+        val obj = is.readObject()
+        is.close()
+        obj.asInstanceOf[Command]
+      }
     })
   }
 }
