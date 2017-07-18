@@ -12,7 +12,7 @@ import org.apache.kafka.common.TopicPartition
 import science.wasabi.tini._
 import science.wasabi.tini.bot.commands.{Command, Wanikani}
 import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
-import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor
+import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, JdaIngestionActor}
 import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.config.Config
 
@@ -27,25 +27,7 @@ object BotMain extends App {
 
   implicit val config = Config.conf
 
-  import akka.typed._
-  import akka.typed.scaladsl.Actor
-
-  object PingCommand extends Command {override def prefix: String = "!ping"}
-  object KillCommand extends Command {override def prefix: String = "!kill " + config.killSecret}
-
-  def respondingActor(api: ActorRef[JdaCommands]): Behavior[DiscordMessage] = Actor.immutable {
-    (ctx, message) => message.content match {
-      case PingCommand(args) =>
-        api ! SendMessage(message.createReply("PONG!"))
-        Actor.same
-      case KillCommand(args) =>
-        api ! Shutdown()
-        Actor.same
-      case text =>
-        println("lol: " + text)
-        Actor.same
-    }
-  }
+  val ingestion = new AkkaCordIngestion
 
   import scala.concurrent.ExecutionContext.Implicits.global
   implicit val system = akka.actor.ActorSystem("kafka")
@@ -59,12 +41,12 @@ object BotMain extends App {
   val producerSettings = ProducerSettings(system, new ByteArraySerializer, new StringSerializer)
     .withBootstrapServers(kafkaServer)
 
-  val doneProducer = Source(1 to 3)
+  val doneProducer = Source(1 to 5)
     .map(_.toString)
-    .map { elem =>
-      println(elem)
+    .map(elem => {
+      println("in: " + elem)
       new ProducerRecord[Array[Byte], String](config.kafka.topic, elem)
-    }
+    })
     .runWith(Producer.plainSink(producerSettings))
     .foreach(_ => println("Done Producing"))
 
@@ -77,24 +59,14 @@ object BotMain extends App {
   val partition = 0
   val offset = 0L // starts from beginnning; TODO: save offset somewhere
   val subscription = Subscriptions.assignmentWithOffset(
-    new TopicPartition(config.kafka.topic, partition) -> 0L
+    new TopicPartition(config.kafka.topic, partition) -> offset
   )
-  val doneConsumer =
-    Consumer.plainSource(consumerSettings, subscription)
-      .mapAsync(1){ record =>
-        println(record.value())
-        Future.successful(Done)
-      }
-      .take(3)
-      .runWith(Sink.ignore)
+  val doneConsumer = Consumer.plainSource(consumerSettings, subscription)
+    .mapAsync(1)(record => {
+      println("out: " + record.value())
+      Future.successful(Done)
+    })
+    .runWith(Sink.ignore)
     .foreach(_ => println("Done Consuming"))
-
-
-  // other stuff
-  val handlers: Seq[ActorRef[JdaCommands] => Behavior[DiscordMessage]] = Seq(
-    respondingActor(_),
-    Wanikani.wanikaniCommandActor(_)(Map())
-  )
-  val ingestionActor = JdaIngestionActor.startup(handlers)
 }
 
