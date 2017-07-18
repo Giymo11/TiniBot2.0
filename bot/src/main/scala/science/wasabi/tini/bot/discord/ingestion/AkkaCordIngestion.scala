@@ -11,7 +11,7 @@ import science.wasabi.tini.bot.discord.wrapper.{DiscordMessage, DiscordWrapperCo
 import science.wasabi.tini.config.Config.TiniConfig
 
 
-class AkkaCordIngestion(implicit config: TiniConfig) {
+class AkkaCordIngestion(implicit config: TiniConfig) extends Ingestion {
   implicit val system: ActorSystem = ActorSystem("AkkaCord")
   implicit val materializer = ActorMaterializer()
 

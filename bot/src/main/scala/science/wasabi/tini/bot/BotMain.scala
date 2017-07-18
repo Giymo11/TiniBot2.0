@@ -5,7 +5,7 @@ import akka.Done
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import science.wasabi.tini._
-import science.wasabi.tini.bot.discord.ingestion.AkkaCordIngestion
+import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, Ingestion}
 import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.config.Config
 
@@ -16,7 +16,7 @@ object BotMain extends App {
   println(Helper.greeting)
   implicit val config = Config.conf
 
-  val ingestion = new AkkaCordIngestion
+  val ingestion: Ingestion = new AkkaCordIngestion
 
   import scala.concurrent.ExecutionContext.Implicits.global
   implicit val system = akka.actor.ActorSystem("kafka")
@@ -26,7 +26,7 @@ object BotMain extends App {
 
   // pipe to kafka
   val discordMessageStream = ingestion.source
-  val commandStream = ingestion.source.map(_.toString) // TODO: actually map to commands
+  val commandStream = discordMessageStream.map(_.toString) // TODO: actually map to commands
   val commandTopicStream = commandStream.map(streams.mapToCommandTopic)
   commandTopicStream
     .runWith(streams.commandSink)
@@ -34,12 +34,13 @@ object BotMain extends App {
 
   // read from kafka
   val commandStreamFromKafka = streams.sourceFromCommandTopic()
-  commandStreamFromKafka.mapAsync(1)(record => { // TODO: actually add the logic
-    println("out: " + record.value())
+  commandStreamFromKafka.mapAsync(1)(record => {
+    println("out: " + record.value()) // TODO: actually add the logic
     Future.successful(Done)
   })
   .runWith(Sink.ignore)
   .foreach(_ => println("Done Consuming"))
 
+  // TODO: add the reply steam thingy
 }
 
