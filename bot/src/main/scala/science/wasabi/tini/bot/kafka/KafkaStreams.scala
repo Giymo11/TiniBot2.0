@@ -5,7 +5,7 @@ import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
-import science.wasabi.tini.bot.BotMain.system
+import science.wasabi.tini.bot.BotMain.{Command, system}
 import science.wasabi.tini.config.Config.TiniConfig
 
 
@@ -16,12 +16,12 @@ class KafkaStreams(implicit config: TiniConfig) {
   private val producerSettings = ProducerSettings(system, new ByteArraySerializer, new StringSerializer)
     .withBootstrapServers(kafkaServer)
 
-  val commandSink = Producer.plainSink(producerSettings)
+  val sink = Producer.plainSink(producerSettings)
 
-  def mapToCommandTopic(command: String): ProducerRecord[Array[Byte], String] = {
+  def mapToCommandTopic(command: Command): ProducerRecord[Array[Byte], String] = {
     println("in: " + command)
-    new ProducerRecord[Array[Byte], String](config.kafka.topic, command)
-    }
+    new ProducerRecord[Array[Byte], String](config.kafka.topic, command.toString)
+  }
 
   def sourceFromCommandTopic() = {
     // kafka consumer
