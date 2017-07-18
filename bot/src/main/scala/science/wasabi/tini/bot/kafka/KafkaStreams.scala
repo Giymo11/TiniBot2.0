@@ -18,7 +18,7 @@ import scala.util.Try
 
 
 class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
-  val kafkaServer = s"config.kafka.server:{config.kafka.port}"
+  val kafkaServer = s"${config.kafka.server}:${config.kafka.port}"
 
   def toBinary(command: Command): Array[Byte] = {
     val out = new ByteArrayOutputStream()
