@@ -61,18 +61,18 @@ docker run -d \
 Create a topic: 
 ```
 docker run \
-  --net=host \
-  --rm confluentinc/cp-kafka:3.2.1 \
-  kafka-topics --create --topic tini-test1 --partitions 1 --replication-factor 1 --if-not-exists --zookeeper localhost:32181
+    --net=host \
+    --rm confluentinc/cp-kafka:3.2.1 \
+    kafka-topics --create --topic tini-test1 --partitions 1 --replication-factor 1 --if-not-exists --zookeeper localhost:32181
 ```
 
 If you need to check if a topic is present:
 ```
 docker run \
-  --net=host \
-  --rm \
-  confluentinc/cp-kafka:3.2.1 \
-  kafka-topics --describe --topic tini-test1 --zookeeper localhost:32181
+    --net=host \
+    --rm \
+    confluentinc/cp-kafka:3.2.1 \
+    kafka-topics --describe --topic tini-test1 --zookeeper localhost:32181
 ```
 
 And, of course, if you need to start over:
