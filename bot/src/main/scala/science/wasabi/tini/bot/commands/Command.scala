@@ -35,7 +35,7 @@ object CommandRegistry {
     .find { case (string, _) => args.startsWith(string) }
     .map { case (string, clazz) => clazz
       .getConstructor(classOf[String])
-      .newInstance(args.drop(string.length + 1).trim)
+      .newInstance(args.drop(string.length).trim)
     }
 }
 
