@@ -2,14 +2,13 @@ package science.wasabi.tini.bot.discord.ingestion
 
 
 import akka.NotUsed
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.EventStream
-import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.stream.scaladsl._
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import net.katsstuff.akkacord.{APIMessage, DiscordClientSettings}
 import science.wasabi.tini.bot.discord.wrapper.{DiscordMessage, DiscordWrapperConverter}
 import science.wasabi.tini.config.Config.TiniConfig
-import science.wasabi.tini.bot.discord.wrapper.DiscordWrapperConverter.AkkaCordConverter._
 
 
 class AkkaCordIngestion(implicit config: TiniConfig) {
@@ -28,4 +27,6 @@ class AkkaCordIngestion(implicit config: TiniConfig) {
   eventStream.subscribe(ref, classOf[APIMessage.MessageCreate])
 
   val source: Source[DiscordMessage, NotUsed] = Source.fromPublisher(publisher)
+
+  def shutdown() = system.terminate()
 }

@@ -2,18 +2,14 @@ package science.wasabi.tini.bot
 
 
 import akka.Done
-import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
 import akka.kafka.scaladsl.{Consumer, Producer}
+import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Sink
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.TopicPartition
 import science.wasabi.tini._
-import science.wasabi.tini.bot.commands.{Command, Wanikani}
-import science.wasabi.tini.bot.discord.ingestion.JdaIngestionActor._
-import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, JdaIngestionActor}
-import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
+import science.wasabi.tini.bot.discord.ingestion.AkkaCordIngestion
 import science.wasabi.tini.config.Config
 
 import scala.concurrent.Future
@@ -21,10 +17,6 @@ import scala.concurrent.Future
 
 object BotMain extends App {
   println(Helper.greeting)
-
-  println("Key = " + Config.conf.apiKey)
-  println("Path = " + Config.conf.envExample)
-
   implicit val config = Config.conf
 
   val ingestion = new AkkaCordIngestion
@@ -41,7 +33,7 @@ object BotMain extends App {
   val producerSettings = ProducerSettings(system, new ByteArraySerializer, new StringSerializer)
     .withBootstrapServers(kafkaServer)
 
-  val doneProducer = Source(1 to 5)
+  val doneProducer = ingestion.source
     .map(_.toString)
     .map(elem => {
       println("in: " + elem)
@@ -58,9 +50,7 @@ object BotMain extends App {
 
   val partition = 0
   val offset = 0L // starts from beginnning; TODO: save offset somewhere
-  val subscription = Subscriptions.assignmentWithOffset(
-    new TopicPartition(config.kafka.topic, partition) -> offset
-  )
+  val subscription = Subscriptions.topics(config.kafka.topic)
   val doneConsumer = Consumer.plainSource(consumerSettings, subscription)
     .mapAsync(1)(record => {
       println("out: " + record.value())
