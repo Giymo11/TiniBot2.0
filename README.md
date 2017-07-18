@@ -19,3 +19,12 @@ Also, update the `kill-secret` or anyone can shutdown your bot.
 * `!ping`
 * `!kill <secret>`
 
+
+
+## Infrastrtucture
+
+I guess it would be interesting to use some nice and new technologies.
+
+I'd vote for a kafka cluster, a cassandra cluster being the data backbone of all this and operating with streams on top of them.
+
+Or of course, we could simply do akka persistence (but not with the typed actors)
