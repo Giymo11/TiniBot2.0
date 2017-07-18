@@ -1,5 +1,6 @@
 package science.wasabi.tini.bot.commands
 
+
 import science.wasabi.tini.bot.BotMain.{NoOp, Ping}
 
 
@@ -25,6 +26,7 @@ object CommandRegistry {
     }
 }
 
+// TODO: add sender etc
 abstract class Command(argsIn: String) extends Serializable {
   val args: String = argsIn
 }

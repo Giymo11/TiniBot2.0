@@ -3,7 +3,8 @@ package science.wasabi.tini.bot
 
 import akka.NotUsed
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl._
+
 import science.wasabi.tini._
 import science.wasabi.tini.bot.commands._
 import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, Ingestion}
@@ -15,8 +16,8 @@ object BotMain extends App {
   println(Helper.greeting)
   implicit val config = Config.conf
 
-  case class Ping(override val args: String) extends Command(args)
-  case class NoOp(override val args: String) extends Command(args)
+  final case class Ping(override val args: String) extends Command(args)
+  final case class NoOp(override val args: String) extends Command(args)
 
   val ingestion: Ingestion = new AkkaCordIngestion
 
@@ -27,7 +28,9 @@ object BotMain extends App {
   val streams = new KafkaStreams
 
   // pipe to kafka
-  val commandStream: Source[Command, NotUsed] = ingestion.source.mapConcat[Command](dmsg => CommandRegistry.getCommandsFor(dmsg.content)) // TODO: actually map to commands
+  val commandStream: Source[Command, NotUsed] = ingestion.source.mapConcat[Command](dmsg =>
+    CommandRegistry.getCommandsFor(dmsg.content)
+  )
   val commandTopicStream = commandStream.map(streams.mapToCommandTopic)
   commandTopicStream
     .runWith(streams.sink)

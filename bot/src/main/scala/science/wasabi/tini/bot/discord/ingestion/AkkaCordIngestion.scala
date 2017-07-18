@@ -2,11 +2,13 @@ package science.wasabi.tini.bot.discord.ingestion
 
 
 import akka.NotUsed
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor._
 import akka.event.EventStream
 import akka.stream.scaladsl._
 import akka.stream.{ActorMaterializer, OverflowStrategy}
+
 import net.katsstuff.akkacord.{APIMessage, DiscordClientSettings}
+
 import science.wasabi.tini.bot.discord.wrapper.{DiscordMessage, DiscordWrapperConverter}
 import science.wasabi.tini.config.Config.TiniConfig
 
