@@ -14,10 +14,13 @@ object CommandRegistry {
 
   def configure(commands: Map[String, String]): Unit = {
 
-    case class CommandNotFoundError(__not_used: String) extends Command(argsIn = __not_used) with Serializable
+    case class CommandNotFoundError(notUsed: String) extends Command(argsIn = notUsed) with Serializable
+
     def convertToClass(name: String): Class[Command] = Try(Class.forName(name)) match {
       case Success(commandClazz) => commandClazz.asInstanceOf[Class[Command]]
-      case Failure(exception) => exception.printStackTrace(); classOf[CommandNotFoundError].asInstanceOf[Class[Command]]
+      case Failure(exception) =>
+        exception.printStackTrace()
+        classOf[CommandNotFoundError].asInstanceOf[Class[Command]]
     }
 
     CommandRegistry.commandRegistry = commands.map {
