@@ -9,32 +9,17 @@ import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer}
+import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySerializer, StringDeserializer, StringSerializer}
+import science.wasabi.tini.bot.BotMain.{NoOp, UnkownCommand}
 import science.wasabi.tini.bot.commands.Command
 import science.wasabi.tini.config.Config.TiniConfig
 
 import scala.concurrent.Future
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
   val kafkaServer = s"${config.kafka.server}:${config.kafka.port}"
-
-  def toBinary(command: Command): Array[Byte] = {
-    val out = new ByteArrayOutputStream()
-    val os = new ObjectOutputStream(out)
-    os.writeObject(command)
-    os.close()
-    out.toByteArray
-  }
-  def fromBinary(data: Array[Byte]): Try[Command] = Try {
-    val in = new ByteArrayInputStream(data)
-    val is = new ObjectInputStream(in)
-    val obj = is.readObject()
-    is.close()
-    in.close()
-    obj.asInstanceOf[Command]
-  }
 
   // kafka producer
   private val producerSettings = ProducerSettings(system, new ByteArraySerializer, new ByteArraySerializer)
@@ -44,10 +29,14 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
 
   def mapToCommandTopic(command: Command): ProducerRecord[Array[Byte], Array[Byte]] = {
     println("in: " + command)
-    new ProducerRecord[Array[Byte], Array[Byte]](config.kafka.topic, toBinary(command))
-  }
+    val out = new ByteArrayOutputStream()
+    val os = new ObjectOutputStream(out)
+    os.writeObject(command)
+    os.close()
 
-  case class KafkaParseError(override val args: String) extends Command(args)
+    val bytes = out.toByteArray
+    new ProducerRecord[Array[Byte], Array[Byte]](config.kafka.topic, bytes)
+  }
 
   def sourceFromCommandTopic(): Source[Command, Consumer.Control] = {
     // kafka consumer
@@ -59,11 +48,19 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
     val partition = 0
     val offset = 0L // starts from beginnning; TODO: save offset somewhere
     val subscription = Subscriptions.topics(config.kafka.topic)
+
     Consumer.plainSource(consumerSettings, subscription).map(record => {
-      fromBinary(record.value).fold(
-        throwable => KafkaParseError(throwable.getMessage),
-        command => command
-      )
+      def fromBinary(data: Array[Byte]): Command = {
+        val in = new ByteArrayInputStream(record.value())
+        val is = new ObjectInputStream(in)
+        val obj = is.readObject()
+        is.close()
+        in.close()
+
+        obj.asInstanceOf[Command]
+      }
+
+      Try(fromBinary(record.value())).fold(ex => UnkownCommand(ex.getMessage), c => c)
     })
   }
 }
