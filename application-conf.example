@@ -6,3 +6,8 @@ kafka {
   port   = 9092
   topic  = "commands"
 }
+
+bot.commands {
+  "!ping": "science.wasabi.tini.bot.BotMain$Ping"
+  "": "science.wasabi.tini.bot.BotMain$NoOp"
+}
