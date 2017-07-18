@@ -11,14 +11,17 @@ object CommandRegistry {
   )
 
   def getCommandsFor(args: String): scala.collection.immutable.Iterable[Command] = commandRegistry
-    .filter(p => args.startsWith(p._1))
-    .map(f => f._2.getConstructor(classOf[String]).newInstance(args.drop(f._1.length + 1).trim))
+    .filter { case (string, _) => args.startsWith(string) }
+    .map { case (string, clazz) => clazz
+      .getConstructor(classOf[String])
+      .newInstance(args.drop(string.length).trim)
+    }
 
   def unapply(args: String): Option[Command] = commandRegistry
     .find { case (string, _) => args.startsWith(string) }
     .map { case (string, clazz) => clazz
       .getConstructor(classOf[String])
-      .newInstance(args.drop(string.length + 1).trim)
+      .newInstance(args.drop(string.length).trim)
     }
 }
 
