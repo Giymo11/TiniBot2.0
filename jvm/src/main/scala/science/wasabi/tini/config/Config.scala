@@ -9,7 +9,7 @@ import com.typesafe.config.{Config => TypesafeConfig, ConfigFactory}
 object Config {
   // Model for the config file
   case class TiniConfig(envExample: String, discordBotToken: String, killSecret: String, kafka: Kafka, bot: Bot)
-  case class Kafka(server: String, port: String, topic: String)
+  case class Kafka(server: String, port: String, commandtopic: String, replytopic: String)
   case class Bot(commands: Map[String, String])
 
   val conf: TiniConfig = {

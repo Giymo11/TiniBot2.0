@@ -12,7 +12,7 @@ import science.wasabi.tini.bot.commands._
 import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, Ingestion}
 import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.config.Config
-
+import science.wasabi.tini.bot.replies._
 
 object BotMain extends App {
   println(Helper.greeting)
@@ -20,8 +20,14 @@ object BotMain extends App {
   implicit val config = Config.conf
   CommandRegistry.configure(config.bot.commands)
 
-  case class Ping(override val args: String) extends Command(args) {}
-  case class NoOp(override val args: String) extends Command(args) {}
+  class Ping(override val args: String, override val auxData: String) extends Command(args, auxData) {
+    def action: Reply = {
+      SimpleReply(auxData, "PONG")
+    }
+  }
+  class NoOp(override val args: String, override val auxData: String) extends Command(args, auxData) {
+    def action: Reply = NoReply()
+  }
 
   val ingestion: Ingestion = new AkkaCordIngestion
 
@@ -32,19 +38,29 @@ object BotMain extends App {
   val kafka = new KafkaStreams
 
   // pipe to kafka
-  def string2command(string: String): Iterable[Command] = CommandRegistry.getCommandsFor(string)
-  val commandStream: Source[Command, NotUsed] = ingestion.source.mapConcat[Command](dmsg => string2command(dmsg.content))
+  def string2command(string: String, auxData: String): Iterable[Command] = CommandRegistry.getCommandsFor(string, auxData)
+  val commandStream: Source[Command, NotUsed] = ingestion.source.mapConcat[Command](dmsg => string2command(dmsg.content, dmsg.channel_id))
   val commandTopicStream = commandStream.map(kafka.toCommandTopic)
   commandTopicStream
     .runWith(kafka.sink)
     .foreach(_ => println("Done Producing"))
 
-  // read from kafka
+  // read from kafka, do stuff and send back
   val commandStreamFromKafka = kafka.sourceFromCommandTopic()
   commandStreamFromKafka
-    .map(command => println("out: " + command))
+    .map(command => {
+      command.action
+    }
+    )
+    .map(kafka.toReplyTopic)
+    .runWith(kafka.sink)
+
+  //read replies
+
+  val replyStreamFromKafka = kafka.sourceFromReplyTopic()
+  replyStreamFromKafka
+    .map(reply => ingestion.handleReply(reply))
     .runWith(Sink.ignore)
-    .foreach(_ => println("Done Consuming"))
 
   // TODO: add the reply steam thingy
 }
