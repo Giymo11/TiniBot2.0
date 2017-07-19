@@ -46,7 +46,7 @@ object Jisho {
       val urlEncoded = java.net.URLEncoder.encode(args, "utf-8")
       val addr = s"http://jisho.org/api/v1/search/words?keyword=${urlEncoded}"
       println("before")
-      val res = httpClient.expect[Definition](addr).attemptRun
+      val res = httpClient.expect[Definition](addr).unsafePerformSyncAttempt
       res match {
           case -\/(fail) =>
             println(fail)
@@ -73,12 +73,11 @@ object Jisho {
                 "Jisho", 
                 args, 
                 List(
-                  ("Word", jap.word.getOrElse(""), true),
-                  ("Reading", jap.reading.getOrElse(""), true),
+                  ("Word", jap.word.getOrElse("None"), true),
+                  ("Reading", jap.reading.getOrElse("None"), true),
                   ("Definition", eng, true)
                 )
               )
-              //SimpleReply(auxData, repStr)
             }
       } 
     }
