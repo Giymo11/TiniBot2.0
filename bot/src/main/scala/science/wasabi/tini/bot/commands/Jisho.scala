@@ -49,20 +49,36 @@ object Jisho {
       val res = httpClient.expect[Definition](addr).attemptRun
       res match {
           case -\/(fail) =>
-            println("fail")
             println(fail)
             NoReply()
           case \/-(success) =>
             if(success.data.size == 0) {  
-              println("none")
-              NoReply()
+              EmbedReply(
+                auxData,
+                (255, 0, 0),
+                "Jisho",
+                args,
+                List(
+                  ("Error", "Definition not found", true)
+                )
+              )
             }
             else {
-              println("definition")
               val jap = success.data(0).japanese(0)
               val eng = success.data(0).senses(0).english_definitions(0)
               val repStr = s"${jap.word.getOrElse("")} [${jap.reading.getOrElse("")}] -> ${eng}"
-              SimpleReply(auxData, repStr)
+              EmbedReply(
+                auxData, 
+                (138, 188, 131), 
+                "Jisho", 
+                args, 
+                List(
+                  ("Word", jap.word.getOrElse(""), true),
+                  ("Reading", jap.reading.getOrElse(""), true),
+                  ("Definition", eng, true)
+                )
+              )
+              //SimpleReply(auxData, repStr)
             }
       } 
     }
