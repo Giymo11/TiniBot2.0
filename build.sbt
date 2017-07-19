@@ -17,6 +17,8 @@ val http4sVersion = "0.15.13a"
 val akkaVersion = "2.5.3"
 val circeVersion = "0.8.0"
 
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+
 lazy val root = project
   .in(file("."))
   .aggregate(bot, web, jsui)
