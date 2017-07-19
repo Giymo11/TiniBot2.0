@@ -51,9 +51,9 @@ class AkkaCordApi(shutdownCallback: () => Unit)(implicit config: TiniConfig) ext
         title = Some(rep.title),
         description = Some(rep.description),
         color = Some(rep.color._3 + rep.color._2 * 16 + rep.color._1 * 16 * 16),
-        fields = rep.fields.map(f =>
-          EmbedField(f._1, f._2, Some(f._3))
-        )
+        fields = rep.fields.map {case (title, description, inline) =>
+          EmbedField(title, description, Some(inline))
+        }
       ))
     )))
     case rep: ShutdownReply =>
