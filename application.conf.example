@@ -1,3 +1,4 @@
+env-example = ${Path}
 discord-bot-token = ""
 kill-secret = "secret"
 
@@ -9,5 +10,4 @@ kafka {
 
 bot.commands {
   "!ping": "science.wasabi.tini.bot.BotMain$Ping"
-  "": "science.wasabi.tini.bot.BotMain$NoOp"
 }

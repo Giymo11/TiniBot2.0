@@ -3,20 +3,7 @@
 
 ## Installation
 
-Create a application.conf file. 
-
-It looks something like this: 
-```
-env-example = ${Path}
-discord-bot-token = "MjExOTdfgsgNdfgsdfgjE0ODQ5.DDhsfdghqw.YwXUnMFapasdfdgfSN0j2JU"
-kill-secret = "secret"
-
-kafka {
-  server = "your.ip.goes.here"
-  port   = port
-  topic  = tini-test1
-}
-```
+Create an application.conf file; You will find the example in the root directory.
 
 ### Bot Token
 First, slot in your own `discord-bot.token`
@@ -31,6 +18,7 @@ Update your secret with your own password, or anyone will be able to kill your b
 
 ### kafka
 Update the kafka configuration with your own parameters described below.
+
 
 
 ## Infrastrtucture
@@ -79,6 +67,7 @@ And, of course, if you need to start over:
 ```
 docker rm -f $(docker ps -a -q)
 ```
+
 
 
 ## Commands

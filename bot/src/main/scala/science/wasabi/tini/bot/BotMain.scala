@@ -1,13 +1,15 @@
 package science.wasabi.tini.bot
 
 
+import scala.collection.immutable.Iterable
+
 import akka.NotUsed
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+
 import science.wasabi.tini._
 import science.wasabi.tini.bot.commands._
 import science.wasabi.tini.bot.discord.ingestion.{AkkaCordIngestion, Ingestion}
-import science.wasabi.tini.bot.discord.wrapper.DiscordMessage
 import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.config.Config
 
@@ -20,11 +22,6 @@ object BotMain extends App {
 
   case class Ping(override val args: String) extends Command(args) {}
   case class NoOp(override val args: String) extends Command(args) {}
-  case class UnkownCommand(override val args: String) extends Command(args) {}
-
-  "!ping" match {
-    case CommandRegistry(command) => println("testo: " + command)
-  }
 
   val ingestion: Ingestion = new AkkaCordIngestion
 
@@ -32,20 +29,18 @@ object BotMain extends App {
   implicit val system = akka.actor.ActorSystem("kafka")
   implicit val materializer = ActorMaterializer()
 
-  val streams = new KafkaStreams
+  val kafka = new KafkaStreams
 
   // pipe to kafka
-  val discordMessageStream: Source[DiscordMessage, NotUsed] = ingestion.source
-  val commandStream: Source[Command, NotUsed] = discordMessageStream.mapConcat[Command](dmsg =>
-    CommandRegistry.getCommandsFor(dmsg.content)
-  ) // TODO: actually map to commands
-  val commandTopicStream = commandStream.map(streams.mapToCommandTopic)
+  def string2command(string: String): Iterable[Command] = CommandRegistry.getCommandsFor(string)
+  val commandStream: Source[Command, NotUsed] = ingestion.source.mapConcat[Command](dmsg => string2command(dmsg.content))
+  val commandTopicStream = commandStream.map(kafka.toCommandTopic)
   commandTopicStream
-    .runWith(streams.sink)
+    .runWith(kafka.sink)
     .foreach(_ => println("Done Producing"))
 
   // read from kafka
-  val commandStreamFromKafka = streams.sourceFromCommandTopic()
+  val commandStreamFromKafka = kafka.sourceFromCommandTopic()
   commandStreamFromKafka
     .map(command => println("out: " + command))
     .runWith(Sink.ignore)
