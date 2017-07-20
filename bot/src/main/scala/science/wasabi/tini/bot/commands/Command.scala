@@ -3,9 +3,9 @@ package science.wasabi.tini.bot.commands
 
 import scala.util.{Failure, Success, Try}
 import scala.collection.immutable.Iterable
-
 import science.wasabi.tini.bot.BotMain.{NoOp, Ping}
 import science.wasabi.tini.bot.replies._
+import science.wasabi.tini.bot.util.AuxData
 
 object CommandRegistry {
 
@@ -14,7 +14,7 @@ object CommandRegistry {
     "" -> classOf[NoOp]
   )
 
-  case class CommandClassNotFound(notUsed: String) extends Command(argsIn = notUsed, auxDataIn = notUsed) with Serializable {
+  case class CommandClassNotFound(notUsed: String) extends Command(argsIn = notUsed, auxDataIn = AuxData(notUsed, notUsed, notUsed)) with Serializable {
     def action: Reply = NoReply()
   }
 
@@ -33,10 +33,10 @@ object CommandRegistry {
     println(s"Commands are: ${CommandRegistry.commandRegistry}")
   }
 
-  def getCommandsFor(args: String, auxData: String): Iterable[Command] = commandRegistry
+  def getCommandsFor(args: String, auxData: AuxData): Iterable[Command] = commandRegistry
     .filter { case (string, _) => args.startsWith(string) }
     .map { case (string, clazz) => clazz
-      .getConstructor(classOf[String], classOf[String])
+      .getConstructor(classOf[String], classOf[AuxData])
       .newInstance(args.drop(string.length).trim, auxData)
     }
 
@@ -48,9 +48,9 @@ object CommandRegistry {
     }
 }
 
-abstract class Command(argsIn: String, auxDataIn: String) extends Serializable {
+abstract class Command(argsIn: String, auxDataIn: AuxData) extends Serializable {
   val args: String = argsIn
-  val auxData: String = auxDataIn
+  val auxData: AuxData = auxDataIn
 
   def action: Reply
 }

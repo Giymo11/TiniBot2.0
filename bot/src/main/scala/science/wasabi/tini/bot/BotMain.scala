@@ -8,22 +8,29 @@ import science.wasabi.tini.bot.commands._
 import science.wasabi.tini.bot.discord.ingestion.{AkkaCordApi, Api}
 import science.wasabi.tini.bot.kafka.KafkaStreams
 import science.wasabi.tini.bot.replies._
+import science.wasabi.tini.bot.util.AuxData
 import science.wasabi.tini.config.Config
 
 object BotMain extends App {
+  val botId = "214748298983112705"
   println(Helper.greeting)
 
   implicit val config = Config.conf
   CommandRegistry.configure(config.bot.commands)
 
-  class Ping(override val args: String, override val auxData: String) extends Command(args, auxData) {
-    def action: Reply = SimpleReply(auxData, "PONG")
+  class Ping(override val args: String, override val auxData: AuxData) extends Command(args, auxData) {
+    def action: Reply = SimpleReply(auxData.channelId, "PONG")
   }
-  class NoOp(override val args: String, override val auxData: String) extends Command(args, auxData) {
-    def action: Reply = NoReply()
+  class NoOp(override val args: String, override val auxData: AuxData) extends Command(args, auxData) {
+    def action: Reply = {
+      if(auxData.userId.equals(botId)) {
+        Poll.assignPoll(auxData.messageId)
+      }
+      NoReply()
+    }
   }
 
-  class Shutdown(override val args: String, override val auxData: String) extends Command(args, auxData) {
+  class Shutdown(override val args: String, override val auxData: AuxData) extends Command(args, auxData) {
     def action: Reply = {
       if(args equals config.killSecret)
         ShutdownReply()
