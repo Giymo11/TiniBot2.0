@@ -2,10 +2,11 @@ package science.wasabi.tini.bot.commands
 
 import org.http4s.client.blaze.PooledHttp1Client
 import science.wasabi.tini.bot.replies._
+import science.wasabi.tini.bot.util.AuxData
 
 import scalaz.{-\/, \/-}
 
-class Jisho(override val args: String, override val auxData: String) extends Command(args, auxData) {
+class Jisho(override val args: String, override val auxData: AuxData) extends Command(args, auxData) {
   def action: Reply = Jisho.action(args, auxData)
 }
 
@@ -24,7 +25,7 @@ object Jisho {
   case class MetaData(status: Int)
   case class Definition(meta: MetaData, data: List[WordData])
 
-  implicit val decodeIntOrString: Decoder[Either[Boolean, String]] = Decoder[Boolean].map(Left(_)).or(Decoder[String].map(Right(_)))
+  implicit val decodeBooleanOrString: Decoder[Either[Boolean, String]] = Decoder[Boolean].map(Left(_)).or(Decoder[String].map(Right(_)))
   implicit val SensesDecoder: Decoder[Senses] = deriveDecoder
   implicit val AttributionDecoder: Decoder[Attribution] = deriveDecoder
   implicit val JapaneseDecoder: Decoder[Japanese] = deriveDecoder
@@ -35,7 +36,7 @@ object Jisho {
 
   implicit val DefinitionJsonDecoder: EntityDecoder[Definition] = jsonOf[Definition]
 
-  def action(args: String, auxData: String): Reply = {
+  def action(args: String, auxData: AuxData): Reply = {
     println("stato")
     implicit val httpClient = PooledHttp1Client()
     val urlEncoded = java.net.URLEncoder.encode(args, "utf-8")
@@ -49,7 +50,7 @@ object Jisho {
       case \/-(success) =>
         if (success.data.isEmpty) {
           EmbedReply(
-            auxData,
+            auxData.channelId,
             (255, 0, 0),
             "Jisho",
             args,
@@ -63,7 +64,7 @@ object Jisho {
           val eng = success.data.head.senses.head.english_definitions.head
           val repStr = s"${jap.word.getOrElse("")} [${jap.reading.getOrElse("")}] -> $eng"
           EmbedReply(
-            auxData,
+            auxData.channelId,
             (138, 188, 131),
             "Jisho",
             args,

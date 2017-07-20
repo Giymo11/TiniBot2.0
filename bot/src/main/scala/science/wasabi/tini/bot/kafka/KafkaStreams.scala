@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.{ByteArrayDeserializer, ByteArraySe
 import science.wasabi.tini.BinaryHelper
 import science.wasabi.tini.bot.commands.Command
 import science.wasabi.tini.bot.replies._
+import science.wasabi.tini.bot.util.AuxData
 import science.wasabi.tini.config.Config.TiniConfig
 
 import scala.concurrent.Future
@@ -36,7 +37,7 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
     new ProducerRecord[Array[Byte], Array[Byte]](config.kafka.commandtopic, BinaryHelper.toBinary(command))
   }
 
-  case class KafkaParseError(override val args: String, override val auxData: String) extends Command(args, auxData) {
+  case class KafkaParseError(override val args: String, override val auxData: AuxData) extends Command(args, auxData) {
     def action: Reply = NoReply()
   }
 
@@ -55,7 +56,7 @@ class KafkaStreams(implicit config: TiniConfig, system: ActorSystem) {
 
     Consumer.plainSource(consumerSettings, subscription).map(record => {
       BinaryHelper.fromBinary[Command](record.value).fold(
-        throwable => KafkaParseError(throwable.getMessage, ""),
+        throwable => KafkaParseError(throwable.getMessage, AuxData("", "", "")),
         command => command
       )
     })
